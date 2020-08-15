@@ -1,5 +1,5 @@
 ---
-title: somethint about SQL
+title: something about SQL
 author: douqq
 date:  2020-08-15 16:00:34 +0800
 categories: [Database, SQL]
