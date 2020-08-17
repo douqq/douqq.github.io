@@ -1,7 +1,7 @@
 ---
 title: something about SQL
 author: douqq
-date:  2020-08-15 16:00:34 +0800
+date:  2020-08-12 16:00:34 +0800
 categories: [Database, SQL]
 tags: [sql]
 ---
