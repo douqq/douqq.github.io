@@ -16,13 +16,15 @@ tags: [sql,rdbms,concept]
 
 ​	每个二维表被称为一个实体(Entity)，它可以是人、地点或者某种事物等。表中的每个列被称为属性(Attribute)或者字段(Field)，表中的每一行代表了该实体的一个特定实例，称为记录(Record)。
 
-​	
+​	<img src="https://imgs-1300198075.cos.ap-shanghai.myqcloud.com/sql-result.png" style="zoom:50%;" />
 
-​	<img src="../assets/img/posts/sql-result.png" style="zoom:50%;" />
+
 
 ​	在一个关系数据库模型中，表和表之间是有关联的，这种关联常用所谓的E-R图(Entity-Relationship Diagram)来表示。
 
-​	<img src="../assets/img/posts/relations.png" style="zoom:30%;" />	
+<img src="https://imgs-1300198075.cos.ap-shanghai.myqcloud.com/relations.png" style="zoom:33%;" />
+
+​		
 
 ​	实体与实体之间的关系有以下三种
 
@@ -78,11 +80,11 @@ tags: [sql,rdbms,concept]
 
 使用RDBMS 时，最常见的系统结构就是客户端/ 服务器类型（C/S类型）这种架构
 
-<img src="../assets/img/posts/cs-archi.png" style="zoom:30%;" />
+<img src="https://imgs-1300198075.cos.ap-shanghai.myqcloud.com/cs-archi.png" style="zoom:33%;" />
 
 如果在生产系统上，一般会由服务端进行数据库的统一访问，会变成如下架构
 
-<img src="../assets/img/posts/cs-archi-1.png" alt="../asset" style="zoom:33%;" />
+<img src="https://imgs-1300198075.cos.ap-shanghai.myqcloud.com/cs-archi-1.png" style="zoom:40%;" />
 
 
 
@@ -146,7 +148,7 @@ tags: [sql,rdbms,concept]
 
 ​	索引是物理模型中的一个概念，利用索引，可以直接存取表中的某一条记录而不需要搜索整个表。因此，索引提供了一条更快速访问数据记录的途径。当在数据库中针对某个表创建一个索引时，系统将根据此索引建立一个相应的子表。相对原来的表(主表)而言，子表要小得多。它将存储索引的值以及一个与此索引对应的数据记录在主表中的存储位置，这好比一个指向数据记录物理位置的指针
 
-​	<img src="../assets/img/posts/index-subtable.png" style="zoom:30%;" />
+​	<img src="https://imgs-1300198075.cos.ap-shanghai.myqcloud.com/index-subtable.png" style="zoom:50%;" />
 
 
 
