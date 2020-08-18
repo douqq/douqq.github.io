@@ -22,9 +22,7 @@ mac，Server version: 10.4.13-MariaDB Homebrew
 
 # database
 
-数据库是由数据库、用户、表、视图、宏和索引等对象构成的。可以使用SQL语句来创建这些对象、修改已存在对象的定义或者删除对象，完成这些工作的SQL语句称为DDL (数据定义语言)
-
-# 
+​	数据库是由数据库、用户、表、视图、宏和索引等对象构成的。可以使用SQL语句来创建这些对象、修改已存在对象的定义或者删除对象，完成这些工作的SQL语句称为DDL (数据定义语言)
 
 ​	在数据库内，一般会由几个概念，比如 database，owner，cluster，schema。这些概念在不同的数据库又有不同的所指，反倒是TABLE这种最底层的对象，大家都表示的是同一种意思。所以我们可以由table出发，来定义（或者描述）一些相关概念。
 
@@ -32,6 +30,7 @@ mac，Server version: 10.4.13-MariaDB Homebrew
 
 ​	可以通过下述语句，查看当前数据库的databases；
 
+```mysql
 MariaDB [(none)]> show databases;
 +--------------------+
 | Database           |
@@ -42,20 +41,27 @@ MariaDB [(none)]> show databases;
 | test               |
 +--------------------+
 4 rows in set (0.000 sec)
+```
+
+
 
 ## 切换db（database的简称）
 
+```mysql
 MariaDB [(none)]> **use test**;
 Database changed
+```
 
-一般来说，在数据库内，每个对象都有唯一的id，不过我们一般不会直接使用这个id，我们通过 db_name.tb_name(或者说obj_name)来唯一引用一个表（对象）。因此当然在同一个database内，不能有同名的对象。
+一般来说，在数据库内，每个对象都有唯一的id，不过我们一般不会直接使用这个id，我们通过   db_name.tb_name(或者说obj_name)来唯一引用一个表（对象）。因此当然在同一个database内，不能有同名的对象。  
 
 但是每次都在table前加db_name真的太麻烦了，所以一般在做具体开发过程中，我们会先use database，等于切换到一个独立的scope内，这样database就可以省略了。
 
 例-可以在其他db下使用全局唯一名创建对象：
 
+```mysql
 MariaDB [test]> create table **test1**.tb_1(id int);
 Query OK, 0 rows affected (0.011 sec)
+```
 
 
 
@@ -115,17 +121,16 @@ data_type [NOT NULL | NULL] [DEFAULT {literal | (expr)} ]
 
 一般现在用于描述sql或者命令行的 都是这么一套语法规则，主要有以下几个字符
 
-- |   （竖线）  分隔括号或大括号内的语法项目。只能选择一个项目。   
-- [] （方括号）  可选语法项目。不必键入方括号。   
-- {}  （大括号）  必选语法项。不要键入大括号。 
+- | （竖线）    分隔括号或大括号内的语法项目。只能选择一个项目。   
+- []（方括号）  可选语法项目。不必键入方括号。   
+- {}（大括号）  必选语法项。不要键入大括号。 
 
 
 
 对应于上述语法，我们可以看到，create table是关键字，中间的TEMPORARY 可以省略（是临时表的意思），看到create_definition的时候，没有进一步展开，因此在下文有其进一步描述，col_name column_definition，而column_definition 又有其进一步描述。因此，如果从这个语法图中我们抽取一种写法，将会是这个样子：
 
-```
-CREATE   TABLE  tbl_name
-
+```mysql
+CREATE  TABLE  tbl_name
 (col_name data_type)
 ```
 
@@ -135,19 +140,12 @@ CREATE   TABLE  tbl_name
 
 ```mysql
 CREATE TABLE Product
-
 (product_id CHAR(4) NOT NULL,
-
 product_name VARCHAR(100) NOT NULL,
-
 product_type VARCHAR(32) NOT NULL,
-
 sale_price INTEGER ,
-
 purchase_price INTEGER ,
-
 regist_date DATE ,
-
 PRIMARY KEY (product_id));
 ```
 
@@ -198,19 +196,12 @@ MariaDB [test]> desc Product;
 
 ```mysql
 ALTER TABLE tbl_name
-
 [alter_option [, alter_option] ...]
-
 [partition_options]
 
-
-
 alter_option: {
-
 table_options
-
 | ADD [COLUMN] col_name column_definition
-
 [FIRST | AFTER col_name]
 ```
 
@@ -273,9 +264,7 @@ MariaDB [test]> desc Product;
 
 `DROP TABLE Product;`
 
-删
-
-除的表是无法恢复的B。即使是被误删的表，也无法恢复，只能重新创建，然后重新插入数据。
+删除的表是无法恢复的B。即使是被误删的表，也无法恢复，只能重新创建，然后重新插入数据。
 
 
 
@@ -289,17 +278,11 @@ MariaDB [test]> desc Product;
 
 ```mysql
 INSERT [INTO] tbl_name
-
 [(col_name [, col_name] ...)]
-
 { {VALUES | VALUE} (value_list) [, (value_list)] ...
 
-
-
 INSERT [INTO] tbl_name
-
 [(col_name [, col_name] ...)]
-
 {SELECT ... | TABLE table_name}
 ```
 
