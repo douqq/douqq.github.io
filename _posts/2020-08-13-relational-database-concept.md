@@ -8,7 +8,7 @@ tags: [sql,rdbms,concept]
 
 # 关系型数据库
 
-![codd-paper](https://github.com/douqq/douqq.github.io/blob/master/assets/img/posts/codd-paper.png)
+![codd-paper](https://imgs-1300198075.cos.ap-shanghai.myqcloud.com/codd-paper.png)
 
 
 
