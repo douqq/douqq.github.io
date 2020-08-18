@@ -30,7 +30,7 @@ mac，Server version: 10.4.13-MariaDB Homebrew
 
 ​	可以通过下述语句，查看当前数据库的databases；
 
-```mysql
+```
 MariaDB [(none)]> show databases;
 +--------------------+
 | Database           |
@@ -47,7 +47,7 @@ MariaDB [(none)]> show databases;
 
 ## 切换db（database的简称）
 
-```mysql
+```
 MariaDB [(none)]> **use test**;
 Database changed
 ```
@@ -58,7 +58,7 @@ Database changed
 
 例-可以在其他db下使用全局唯一名创建对象：
 
-```mysql
+```
 MariaDB [test]> create table **test1**.tb_1(id int);
 Query OK, 0 rows affected (0.011 sec)
 ```
@@ -121,15 +121,15 @@ data_type [NOT NULL | NULL] [DEFAULT {literal | (expr)} ]
 
 一般现在用于描述sql或者命令行的 都是这么一套语法规则，主要有以下几个字符
 
-- | （竖线）    分隔括号或大括号内的语法项目。只能选择一个项目。   
-- []（方括号）  可选语法项目。不必键入方括号。   
-- {}（大括号）  必选语法项。不要键入大括号。 
+-  |   竖线     分隔括号或大括号内的语法项目。只能选择一个项目。   
+-  []  方括号  可选语法项目。不必键入方括号。   
+-  {}  大括号  必选语法项。不要键入大括号。 
 
 
 
 对应于上述语法，我们可以看到，create table是关键字，中间的TEMPORARY 可以省略（是临时表的意思），看到create_definition的时候，没有进一步展开，因此在下文有其进一步描述，col_name column_definition，而column_definition 又有其进一步描述。因此，如果从这个语法图中我们抽取一种写法，将会是这个样子：
 
-```mysql
+```sql
 CREATE  TABLE  tbl_name
 (col_name data_type)
 ```
@@ -138,7 +138,7 @@ CREATE  TABLE  tbl_name
 
 ### 如下例：
 
-```mysql
+```sql
 CREATE TABLE Product
 (product_id CHAR(4) NOT NULL,
 product_name VARCHAR(100) NOT NULL,
@@ -194,7 +194,7 @@ MariaDB [test]> desc Product;
 
 ## 部分语法
 
-```mysql
+```sql
 ALTER TABLE tbl_name
 [alter_option [, alter_option] ...]
 [partition_options]
@@ -213,7 +213,7 @@ ALTER TABLE Product ADD COLUMN product_name_pinyin VARCHAR(100) after product_na
 
 在数据库内，字段的顺序也是很重要的，因此指定了 after语句之后，就在其后面增加了一个字段，如：
 
-```mysql
+```sql
 MariaDB [test]> desc Product;
 +---------------------+--------------+------+-----+---------+-------+
 | Field               | Type         | Null | Key | Default | Extra |
@@ -231,7 +231,7 @@ MariaDB [test]> desc Product;
 
 ## 删除字段
 
-```mysql
+```sql
 
 
 MariaDB [test]> ALTER TABLE Product DROP COLUMN product_name_pinyin;
@@ -276,7 +276,7 @@ MariaDB [test]> desc Product;
 
 一般来说，插入数据有2种语法，一种是基于 常量（data literal）的插入，一种是基于其他表的数据插入。
 
-```mysql
+```sql
 INSERT [INTO] tbl_name
 [(col_name [, col_name] ...)]
 { {VALUES | VALUE} (value_list) [, (value_list)] ...
@@ -298,7 +298,7 @@ start transaction; commit;来开启和关闭事务。但是现在数据库一般
 
 ## 样例
 
-```mysql
+```sql
 MariaDB [test]> INSERT INTO Product VALUES ('0001', 'T恤', '衣服',100, 50, '2009-09-21');
 Query OK, 1 row affected (0.001 sec)
 
