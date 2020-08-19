@@ -1,5 +1,5 @@
 ---
-title: create table and insert data
+title: create table and modify data
 author: douqq
 date:  2020-08-15 12:00:00 +0800
 categories: [Database, SQL]
@@ -323,7 +323,180 @@ MariaDB [test]> select * from Product;
 
 ```
 
+# update
 
 
 
+
+
+
+
+# delete
+
+# CTAS
+
+​	我们在介绍create table的语法的时候，看到过后面有个as 子句，这就是 create table as select 的分支，这个分支又常被缩写为 CTAS
+
+​	在数据库实践中，有大量的场景需要临时建个表，用完就删的那种，此时可以不用先写好表结构，create table，然后再insert，直接使用 CTAS即可。
+
+​	
+
+​	如下例：
+
+```
+MariaDB [test]> select * from Product;
++------------+--------------+--------------+------------+----------------+-------------+
+
+| product_id | product_name | product_type | sale_price | purchase_price | regist_date |
+| ---------- | ------------ | ------------ | ---------- | -------------- | ----------- |
+|            |              |              |            |                |             |
+
++------------+--------------+--------------+------------+----------------+-------------+
+
+| 0001 | T恤  | 衣服 | 100  | 50   | 2009-09-21 |
+| ---- | ---- | ---- | ---- | ---- | ---------- |
+|      |      |      |      |      |            |
+
++------------+--------------+--------------+------------+----------------+-------------+
+1 row in set (0.001 sec)
+
+MariaDB [test]> create table Product_1 as select * from Product;
+Query OK, 1 row affected (0.015 sec)
+Records: 1  Duplicates: 0  Warnings: 0
+
+MariaDB [test]> select * from Product_1;
++------------+--------------+--------------+------------+----------------+-------------+
+| product_id | product_name | product_type | sale_price | purchase_price | regist_date |
++------------+--------------+--------------+------------+----------------+-------------+
+| 0001       | T恤          | 衣服         |        100 |             50 | 2009-09-21  |
++------------+--------------+--------------+------------+----------------+-------------+
+1 row in set (0.001 sec)
+```
+
+CTAS 会自动推断你select部分的 字段的数据类型，并且按照select的字段顺序建立表，并且把select 语句应该返回的结果插入到你建立的表内。
+
+## 仅创建表结构
+
+​	在有些场景下，你只需要依据子查询创建一个表结构，而不需要其数据。聪明如你，我想应该可以想到如下办法：
+
+​	`create table xxx as select * from xxxx where 1=2`
+
+​	其原理不过是CTAS的一个特例，即人为的导致select 结果为空而已。
+
+如下例：
+
+```
+MariaDB [test]> create table Product_2 as select * from Product where 1=2;
+Query OK, 0 rows affected (0.011 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+MariaDB [test]> select * from Product_2;
+Empty set (0.000 sec)
+
+MariaDB [test]> desc Product_2;
++----------------+--------------+------+-----+---------+-------+
+| Field          | Type         | Null | Key | Default | Extra |
++----------------+--------------+------+-----+---------+-------+
+| product_id     | char(4)      | NO   |     | NULL    |       |
+| product_name   | varchar(100) | NO   |     | NULL    |       |
+| product_type   | varchar(32)  | NO   |     | NULL    |       |
+| sale_price     | int(11)      | YES  |     | NULL    |       |
+| purchase_price | int(11)      | YES  |     | NULL    |       |
+| regist_date    | date         | YES  |     | NULL    |       |
++----------------+--------------+------+-----+---------+-------+
+6 rows in set (0.002 sec)
+```
+
+
+
+在不少数据库其实还提供了另外一种仅copy空表的语法，即 create table like
+
+以mysql为例：
+
+```
+CREATE [TEMPORARY] TABLE [IF NOT EXISTS] tbl_name
+
+{ LIKE old_tbl_name | (LIKE old_tbl_name) }
+```
+
+Use CREATE TABLE ... LIKE to create an **empty** table based on the definition of another table,including any column attributes and indexes defined in the original table:
+
+一般情况下，create table like 在copy空表方面会更强大一些，比如会copy存储方面的一些参数，以及index，constraint。不过按照我的建议，如果你想在超出 字段，数据类型等方面进行自定义的话，最好还是自己手动去写各种参数，以确保不会被简单的like导致各种疏忽。
+
+如下例：
+
+```
+MariaDB [test]> create table Product_3 like Product;
+Query OK, 0 rows affected (0.013 sec)
+
+MariaDB [test]> desc Product_3;
++----------------+--------------+------+-----+---------+-------+
+| Field          | Type         | Null | Key | Default | Extra |
++----------------+--------------+------+-----+---------+-------+
+| product_id     | char(4)      | NO   | PRI | NULL    |       |
+| product_name   | varchar(100) | NO   |     | NULL    |       |
+| product_type   | varchar(32)  | NO   |     | NULL    |       |
+| sale_price     | int(11)      | YES  |     | NULL    |       |
+| purchase_price | int(11)      | YES  |     | NULL    |       |
+| regist_date    | date         | YES  |     | NULL    |       |
++----------------+--------------+------+-----+---------+-------+
+6 rows in set (0.002 sec)
+
+MariaDB [test]> select * from Product_3;
+Empty set (0.000 sec)
+```
+
+
+
+# 视图(view)
+
+​	视图究竟是什么呢？如果用一句话概述的话，就是“从SQL 的角度来看视图就是一张表”。实际上，在SQL 语句中并不需要区分哪些是表，哪些是视图，只需要知道在更新时它们之间存在一些不同就可以了。
+
+​	那么视图和表到底有什么不同呢？区别只有一个，那就是“是否保存了实际的数据”。
+
+​	通常，我们在创建表时，会通过INSERT 语句将数据保存到数据库之中，而数据库中的数据实际上会被保存到计算机的存储设备（通常是硬盘）中。因此，我们通过SELECT 语句查询数据时，实际上就是从存储设备（硬盘）中读取数据，进行各种计算之后，再将结果返回给用户这样一个过程。
+
+​	但是使用视图时并不会将数据保存到存储设备之中，而且也不会将数据保存到其他任何地方。实际上视图保存的是SELECT 语句（图5-1）。我们从视图中读取数据时，视图会在内部执行该SELECT 语句并创建出一张临时表。
+
+​	根据我的理解，我认为视图最大的用途就是 存储业务逻辑。往往被重复查询的sql会固化为视图，从而实现一种封装和抽象，这样别人可以直接使用这个视图而无非每次都重复实现此业务逻辑。
+
+
+
+## 语法
+
+```sql
+CREATE
+[OR REPLACE]
+VIEW view_name [(column_list)]
+AS select_statement
+```
+
+语法非常简单，我们看一下例子：
+
+```sql
+MariaDB [test]> create view v_product as
+    -> select product_name,product_type
+    -> from product;
+Query OK, 0 rows affected (0.010 sec)
+
+MariaDB [test]> desc v_product;
++--------------+--------------+------+-----+---------+-------+
+| Field        | Type         | Null | Key | Default | Extra |
++--------------+--------------+------+-----+---------+-------+
+| product_name | varchar(100) | NO   |     | NULL    |       |
+| product_type | varchar(32)  | NO   |     | NULL    |       |
++--------------+--------------+------+-----+---------+-------+
+2 rows in set (0.003 sec)
+
+MariaDB [test]> select * from v_product;
++--------------+--------------+
+| product_name | product_type |
++--------------+--------------+
+| T恤          | 衣服         |
+| 运动T恤      | 衣服         |
++--------------+--------------+
+2 rows in set (0.000 sec)
+```
+
+我们可以通过创建v_product视图，来使其他用户看不到我们的内部数据product_id字段。
 
