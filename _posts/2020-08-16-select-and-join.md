@@ -314,6 +314,118 @@ UNION [ALL | DISTINCT] SELECT ...
 
 
 
+我们先来回顾一下视图的概念，视图并不是用来保存数据的，而是通过保存读取数据的SELECT 语句的方法来为用户提供便利。相比之下，子查询就是将用来定义视图的SELECT语句直接用于FROM子句当中。用官方语言讲，就是
+
+A subquery is a SELECT statement within another statement
+
+
+```sql
+MariaDB [test]> SELECT product_type, cnt_product
+    -> FROM ( SELECT product_type, COUNT(*) AS cnt_product
+    -> FROM Product
+    -> GROUP BY product_type ) AS ProductSum;
++--------------+-------------+
+| product_type | cnt_product |
++--------------+-------------+
+| 衣服         |           2 |
++--------------+-------------+
+1 row in set (0.000 sec)
+```
+
+如上所示，子查询就是将用来定义视图的SELECT 语句直接用于FROM 子句当中。虽然“AS ProductSum”就是**子查询的名称**，但由于该名称是一次性的，因此不会像视图那样保存在存储介质（硬盘）之中，而是在SELECT 语句执行之后就消失了。
+
+实际上，该SELECT 语句包含嵌套的结构，**首先**会执行FROM 子句中的SELECT 语句，然后才会执行外层的SELECT 语句
+
+## 嵌套示例
+
+由于子查询的层数原则上没有限制，因此可以像“子查询的FROM 子句中还可以继续使用子查询，该子查询的FROM 子句中还可以再使用子查询……”这样无限嵌套下去
+
+```
+MariaDB [test]> select product_type from (
+    -> SELECT product_type, cnt_product
+    -> FROM ( SELECT product_type, COUNT(*) AS cnt_product
+    -> FROM Product
+    -> GROUP BY product_type ) AS ProductSum ) t;
++--------------+
+| product_type |
++--------------+
+| 衣服         |
++--------------+
+1 row in set (0.000 sec)
+```
+
+因为存在着各种嵌套，所以其实对于子查询的命名（别名）也显得特别重要，请按照一定的层次命名以免分不清楚层级。
+
+## 标量子查询
+
+​	标量就是单一的意思，在数据库之外的领域也经常使用。子查询基本上都会返回多行结果（虽然偶尔也会只返回1 行数据）。而标量子查询则有一个特殊的限制，那就是必须而且只能返回1 行1列的结果，也就是返回表中某一行的某一列的值或者某种聚合
+
+​	由于返回的是单一的值，因此标量子查询的返回值可以用在= 或者<> 这样需要单一值的比较运算符之中。这也正是标量子查询的优势所在
+
+如下例：需要返回售价大于平均值的商品。
+
+```
+MariaDB [test]> select * from product where sale_price>(select avg(sale_price) from product);
++------------+--------------+--------------+------------+----------------+-------------+
+| product_id | product_name | product_type | sale_price | purchase_price | regist_date |
++------------+--------------+--------------+------------+----------------+-------------+
+| 0001       | T恤          | 衣服         |       5000 |             60 | NULL        |
++------------+--------------+--------------+------------+----------------+-------------+
+1 row in set (0.003 sec)
+```
+
+> 注：这种业务逻辑在学会join之后也可以用其他方式来实现
+
+### 标量子查询的书写位置
+
+标量子查询的书写位置并不仅仅局限于WHERE 子句中，通常任何可以使用单一值的位置都可以使用。也就是说，能够使用常数或者列名的地方，无论是SELECT 子句、GROUP BY 子句、HAVING 子句，还是ORDER BY 子句，几乎所有的地方都可以使用。
+
+例：在select 子句代入标量子查询
+
+```
+MariaDB [test]> select product_id,
+    -> product_name,sale_price,
+    -> (select avg(sale_price) from product) as avgprice
+    -> from product;
++------------+--------------+------------+-----------+
+| product_id | product_name | sale_price | avgprice  |
++------------+--------------+------------+-----------+
+| 0001       | T恤          |       5000 | 2750.0000 |
+| 0003       | 运动T恤      |        500 | 2750.0000 |
++------------+--------------+------------+-----------+
+2 rows in set (0.000 sec)
+```
+
+
+
+## 关联子查询
+
+​	大多数情况下，子查询的返回结果不是一条的，当主表（即非子查询的表）想和子查询进行某些关联（join）的时候，当然可以把子查询当做一张表一样进行关联，也可以像上文的子查询一样在where部分进行限定，所不同的是，要在子查询内部和主表进行关联，以达到使主表的每一条记录在比对时，只和一个确定的值进行比对，这就又回到了标量比较的范畴。
+
+可以参考下例：（虽然这个sql没什么具体的业务含义，只是为了说明可以这样做）
+
+```
+MariaDB [test]> select
+    ->  product_id,
+    ->  product_name,
+    ->  sale_price
+    ->  from product p1
+    ->  where sale_price=
+    ->    (select sale_price from product p2
+    ->     where p1.product_id=p2.product_id) ;
++------------+--------------+------------+
+| product_id | product_name | sale_price |
++------------+--------------+------------+
+| 0001       | T恤          |       5000 |
+| 0003       | 运动T恤      |        500 |
++------------+--------------+------------+
+2 rows in set (0.000 sec)
+```
+
+结合条件一定要写在子查询中
+
+关联名称就是像P1、P2 这样作为表别名的名称，作用域（scope）就是生存范围（有效范围）。也就是说，关联名称存在一个有效范围的限制。具体来讲，子查询内部设定的关联名称，只能在该子查询内部使用。换句话说，就是“内部可以看到外部，而外部看不到内部”。
+
 
 
 # 聚合函数

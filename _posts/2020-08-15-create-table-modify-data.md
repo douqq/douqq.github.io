@@ -325,13 +325,156 @@ MariaDB [test]> select * from Product;
 
 # update
 
+使用INSERT 语句向表中插入数据之后，有时却想要再更改数据，这时并不需要把数据删除之后再重新插入，使用UPDATE 语句就可以改变表中的数据了。
 
+## 基本语法
+
+```sql
+UPDATE [LOW_PRIORITY] [IGNORE] table_reference
+SET assignment_list
+[WHERE where_condition]
+```
+
+## 案例
+
+将更新对象的列和更新后的值都记述在SET 子句中。
+
+```
+MariaDB [test]> select * from product;
++------------+--------------+--------------+------------+----------------+-------------+
+| product_id | product_name | product_type | sale_price | purchase_price | regist_date |
++------------+--------------+--------------+------------+----------------+-------------+
+| 0001       | T恤          | 衣服         |        100 |             50 | 2009-09-21  |
+| 0003       | 运动T恤      | 衣服         |       4000 |           2800 | NULL        |
++------------+--------------+--------------+------------+----------------+-------------+
+2 rows in set (0.000 sec)
+
+MariaDB [test]> update product t set t.sale_price=500;
+Query OK, 2 rows affected (0.001 sec)
+Rows matched: 2  Changed: 2  Warnings: 0
+
+MariaDB [test]> select * from product;
++------------+--------------+--------------+------------+----------------+-------------+
+| product_id | product_name | product_type | sale_price | purchase_price | regist_date |
++------------+--------------+--------------+------------+----------------+-------------+
+| 0001       | T恤          | 衣服         |        500 |             50 | 2009-09-21  |
+| 0003       | 运动T恤      | 衣服         |        500 |           2800 | NULL        |
++------------+--------------+--------------+------------+----------------+-------------+
+2 rows in set (0.000 sec)
+```
+
+通常情形下，不会对全表进行更新的，一般都是选择某些符合条件的记录进行更新，此时需要使用where条件。
+
+> 注：大多数新人常犯的错误是不写where条件或者写了不严格的where子句导致全表数据被污染
+
+如下例：
+
+```
+MariaDB [test]> update product t set t.sale_price=5000 where product_id='0001';
+Query OK, 1 row affected (0.001 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+MariaDB [test]> select * from product;
++------------+--------------+--------------+------------+----------------+-------------+
+| product_id | product_name | product_type | sale_price | purchase_price | regist_date |
++------------+--------------+--------------+------------+----------------+-------------+
+| 0001       | T恤          | 衣服         |       5000 |             50 | 2009-09-21  |
+| 0003       | 运动T恤      | 衣服         |        500 |           2800 | NULL        |
++------------+--------------+--------------+------------+----------------+-------------+
+2 rows in set (0.000 sec)
+```
+
+
+
+使用UPDATE 也可以将列更新为NULL（该更新俗称为NULL 清空）。此时只需要将赋值表达式右边的值直接写为NULL 即可。
+
+```
+MariaDB [test]> update product t set t.regist_date=null where product_id='0001';
+Query OK, 1 row affected (0.001 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+MariaDB [test]> select * from product;
++------------+--------------+--------------+------------+----------------+-------------+
+| product_id | product_name | product_type | sale_price | purchase_price | regist_date |
++------------+--------------+--------------+------------+----------------+-------------+
+| 0001       | T恤          | 衣服         |       5000 |             50 | NULL        |
+| 0003       | 运动T恤      | 衣服         |        500 |           2800 | NULL        |
++------------+--------------+--------------+------------+----------------+-------------+
+2 rows in set (0.000 sec)
+```
+
+
+
+## 多列更新
+
+UPDATE 语句的SET 子句支持同时将多个列作为更新对象。
+
+```
+MariaDB [test]> update product t set t.regist_date=null,purchase_price=60 where product_id='0001';
+Query OK, 1 row affected (0.001 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+MariaDB [test]> select * from product;
++------------+--------------+--------------+------------+----------------+-------------+
+| product_id | product_name | product_type | sale_price | purchase_price | regist_date |
++------------+--------------+--------------+------------+----------------+-------------+
+| 0001       | T恤          | 衣服         |       5000 |             60 | NULL        |
+| 0003       | 运动T恤      | 衣服         |        500 |           2800 | NULL        |
++------------+--------------+--------------+------------+----------------+-------------+
+```
 
 
 
 
 
 # delete
+
+不同于drop table，DELETE 语句会留下表（容器），而删除表中的全部或部分数据
+
+## 基本语法
+
+```sql
+DELETE   FROM tbl_name [[AS] tbl_alias]
+[WHERE where_condition]
+```
+
+如果不加where 语句，则是删除表中所有数据。
+
+## 案例
+
+```
+MariaDB [test1]> select * from tb_1;
++------+
+| id   |
++------+
+|    1 |
+|    2 |
+|    3 |
++------+
+3 rows in set (0.000 sec)
+
+MariaDB [test1]> delete from tb_1 where id=1;
+Query OK, 1 row affected (0.001 sec)
+
+MariaDB [test1]> select * from tb_1;
++------+
+| id   |
++------+
+|    2 |
+|    3 |
++------+
+2 rows in set (0.000 sec)
+
+MariaDB [test1]> delete from tb_1 ;
+Query OK, 2 rows affected (0.001 sec)
+
+MariaDB [test1]> select * from tb_1;
+Empty set (0.000 sec)
+```
+
+
+
+
 
 # CTAS
 
