@@ -239,7 +239,55 @@ MariaDB [test]> select * from tb_1 where (num>20) and (val='b' or val='3');
 
 # 集合操作符
 
-In, not in
+## In, not in
+
+当我们想表达 某个数据 是否再一个数据集合之中时，可以使用in 操作符，反之可以使用not in。其实in 可以转义成为所有元素的 or = 操作。
+
+```
+MariaDB [test]> select 3 in (2,3,4,5);
++----------------+
+| 3 in (2,3,4,5) |
++----------------+
+|              1 |
++----------------+
+1 row in set (0.001 sec)
+```
+
+但需要注意的是，在使用IN 和NOT IN 时是无法选取出NULL 数据的
+
+## IN和子查询
+
+IN（NOT IN ）可以使用子查询作为其参数
+
+你可以理解，子查询的结果其实就是一个集合，in 使用一个集合作为其参数，无所谓这个集合是写死的常量，还是动态结果的子查询，如下例：
+
+```
+MariaDB [test]> select id from tb_1;
++------+
+| id   |
++------+
+|    1 |
+|    2 |
+|    3 |
+|    4 |
+|    5 |
+|    6 |
+|    7 |
+|    8 |
+|    9 |
++------+
+9 rows in set (0.000 sec)
+
+MariaDB [test]> select 4 in (select id from tb_1);
++----------------------------+
+| 4 in (select id from tb_1) |
++----------------------------+
+|                          1 |
++----------------------------+
+1 row in set (0.003 sec)
+```
+
+
 
 
 
@@ -314,6 +362,129 @@ MariaDB [test]> select mod(7,3);
 
 # 字符串函数
 
+## 字符串拼接
+
+在实际业务中，我们经常会碰到abc + de = abcde 这样希望将字符串进行拼接的情况。在SQL 中，可以通过CONCAT函数来实现
+
+```
+MariaDB [test]> select concat('ab','cd');
++-------------------+
+| concat('ab','cd') |
++-------------------+
+| abcd              |
++-------------------+
+1 row in set (0.000 sec)
+```
+
+进行字符串拼接时，如果其中包含NULL，那么得到的结果也是NULL。
+
+```
+MariaDB [test]> select concat('ab','cd',null);
++------------------------+
+| concat('ab','cd',null) |
++------------------------+
+| NULL                   |
++------------------------+
+1 row in set (0.000 sec)
+```
+
+有些时候并不是你主动写的null，而是某个字段其中包含了你意想不到的null导致的错误。
+
+注：在大多数数据库，可以使用 || (双竖线)操作符来进行字符串拼接
+
+## length
+
+想要知道字符串中包含多少个字**符**时，可以使用LENGTH（长度）函数
+
+在大多数数据库，length都是返回字符的，但是在mysql中，length函数返回的是字符串的字节数（这就是字符串对应的字符集实际占有的字节长度）
+
+```
+MariaDB [test]> select length('abcd');
++----------------+
+| length('abcd') |
++----------------+
+|              4 |
++----------------+
+1 row in set (0.001 sec)
+
+MariaDB [test]> select length('中国');
++------------------+
+| length('中国')   |
++------------------+
+|                6 |
++------------------+
+1 row in set (0.000 sec)
+```
+
+如果要返回字符串内字符的长度，在mysql内，使用CHAR_LENGTH()函数
+
+```
+MariaDB [test]> select char_length('你好 中国');
++------------------------------+
+| char_length('你好 中国')     |
++------------------------------+
+|                            5 |
++------------------------------+
+1 row in set (0.000 sec)
+```
+
+## 大小写转换
+
+LOWER 函数只能针对英文字母使用，它会将参数中的字符串全都转换为小写
+
+```
+MariaDB [test]> select lower('ABcdE');
++----------------+
+| lower('ABcdE') |
++----------------+
+| abcde          |
++----------------+
+1 row in set (0.000 sec)
+```
+
+UPPER 函数则转换为大写
+
+```
+MariaDB [test]> select upper('ABcdE');
++----------------+
+| upper('ABcdE') |
++----------------+
+| ABCDE          |
++----------------+
+1 row in set (0.000 sec)
+```
+
+## 字符串替换
+
+`REPLACE(对象字符串，替换前的字符串，替换后的字符串)`
+
+使用REPLACE 函数，可以将字符串的一部分替换为其他的字符串
+
+```
+MariaDB [test]> select replace('abcdeabdec','a','x');
++-------------------------------+
+| replace('abcdeabdec','a','x') |
++-------------------------------+
+| xbcdexbdec                    |
++-------------------------------+
+```
+
+## 字符串的截取
+
+`SUBSTRING（对象字符串 FROM 截取的起始位置 FOR 截取的字符数）`
+
+使用SUBSTRING 函数可以截取出字符串中的一部分字符串。截取的起始位置从字符串最左侧开始计算
+
+```
+MariaDB [test]> select substring('123456' from 2 for 3);
++----------------------------------+
+| substring('123456' from 2 for 3) |
++----------------------------------+
+| 234                              |
++----------------------------------+
+1 row in set (0.000 sec)
+```
+
 
 
 ## like
@@ -358,6 +529,169 @@ MariaDB [test]> SELECT 'David_' LIKE 'David\_';
 +-------------------------+
 |                       1 |
 +-------------------------+
+1 row in set (0.000 sec)
+```
+
+# 日期函数
+
+## CURRENT_DATE
+
+CURRENT_DATE 函数能够返回SQL 执行的日期，也就是该函数执行时的日期。由于没有参数，因此无需使用括号。
+
+```
+MariaDB [test]> select current_date;
++--------------+
+| current_date |
++--------------+
+| 2020-08-21   |
++--------------+
+1 row in set (0.001 sec)
+```
+
+## CURRENT_TIME
+
+CURRENT_TIME 函数能够取得SQL 执行的时间，也就是该函数执行时的时间
+
+```
+MariaDB [test]> select current_time;
++--------------+
+| current_time |
++--------------+
+| 18:18:41     |
++--------------+
+```
+
+## CURRENT_TIMESTAMP
+
+CURRENT_TIMESTAMP 函数具有CURRENT_DATE + CURRENT_TIME 的功能。使用该函数可以同时得到当前的日期和时间，当然也可以从结果中截取日期或者时间
+
+```
+MariaDB [test]> select current_timestamp;
++---------------------+
+| current_timestamp   |
++---------------------+
+| 2020-08-21 18:19:31 |
++---------------------+
+1 row in set (0.000 sec)
+```
+
+## EXTRACT
+
+`EXTRACT(日期元素 FROM 日期)`
+
+使用EXTRACT 函数可以截取出日期数据中的一部分，例如“年”“月”，或者“小时”“秒”等。该函数的返回值并不是日期类型而是**数值**类型。
+
+```
+MariaDB [test]> SELECT CURRENT_TIMESTAMP,
+    -> EXTRACT(YEAR FROM CURRENT_TIMESTAMP) AS year,
+    -> EXTRACT(MONTH FROM CURRENT_TIMESTAMP) AS month,
+    -> EXTRACT(DAY FROM CURRENT_TIMESTAMP) AS day,
+    -> EXTRACT(HOUR FROM CURRENT_TIMESTAMP) AS hour,
+    -> EXTRACT(MINUTE FROM CURRENT_TIMESTAMP) AS minute,
+    -> EXTRACT(SECOND FROM CURRENT_TIMESTAMP) AS second;
++---------------------+------+-------+------+------+--------+--------+
+| CURRENT_TIMESTAMP   | year | month | day  | hour | minute | second |
++---------------------+------+-------+------+------+--------+--------+
+| 2020-08-21 18:20:53 | 2020 |     8 |   21 |   18 |     20 |     53 |
++---------------------+------+-------+------+------+--------+--------+
+1 row in set (0.000 sec)
+```
+
+# 转换函数
+
+## cast
+
+`CAST（转换前的值 AS 想要转换的数据类型）`
+
+之所以需要进行类型转换，是因为可能会插入与表中数据类型不匹配的数据，或者在进行运算时由于数据类型不一致发生了错误，又或者是进行自动类型转换会造成处理速度低下。这些时候都需要事前进行数据类型转换。
+
+```
+MariaDB [test]> select cast('123' as int),cast('2020-01-01' as date);
++--------------------+----------------------------+
+| cast('123' as int) | cast('2020-01-01' as date) |
++--------------------+----------------------------+
+|                123 | 2020-01-01                 |
++--------------------+----------------------------+
+1 row in set (0.000 sec)
+```
+
+## COALESCE
+
+COALESCE 是SQL 特有的函数。该函数会返回可变参数A 中左侧开始第1 个不是NULL 的值。该函数最主要的作用就是处理各个字段中可能出现的null值。
+
+```
+MariaDB [test]> select coalesce(null,'-99');
++----------------------+
+| coalesce(null,'-99') |
++----------------------+
+| -99                  |
++----------------------+
+1 row in set (0.001 sec)
+```
+
+
+
+## case 表达式
+
+CASE表达式分为简单CASE表达式和搜索CASE表达式两种。搜索CASE表达式包含简单CASE表达式的全部功能。
+
+```sql
+搜索CASE表达式
+
+CASE WHEN <求值表达式> THEN <表达式>
+
+WHEN <求值表达式> THEN <表达式>
+
+WHEN <求值表达式> THEN <表达式>
+
+.. .
+
+ELSE <表达式>
+
+END
+```
+
+​	WHEN 子句中的“< 求值表达式>”就是类似“列 = 值”这样，返回值为真值（TRUE/FALSE/UNKNOWN）的表达式。我们也可以将其看作使用=、!= 或者LIKE、BETWEEN 等谓词编写出来的表达式。
+
+​	CASE 表达式会从对最初的WHEN 子句中的“< 求值表达式>”进行求值开始执行（从上往下的顺序）如果结果为真（TRUE），那么就返回THEN 子句中的表达式，CASE 表达式的执行到此为止。如果结果不为真，那么就跳转到下一条WHEN 子句的求值之中。如果直到最后的WHEN 子句为止返回结果都不为真，那么就会返回ELSE中的表达式，执行终止。
+
+​	CASE 表达式最后的“END”是不能省略的，请大家特别注意不要遗漏
+
+```
+简单CASE表达式
+
+CASE <表达式>
+
+WHEN <表达式> THEN <表达式>
+
+WHEN <表达式> THEN <表达式>
+
+WHEN <表达式> THEN <表达式>
+
+.. .
+
+ELSE <表达式>
+
+END
+```
+
+如下例：
+
+```
+MariaDB [test]> select case
+    -> when 1=2 then 0
+    -> when 'a'='b' then 0
+    -> else 1
+    -> end;
++------------------------------------------------------+
+| case
+when 1=2 then 0
+when 'a'='b' then 0
+else 1
+end |
++------------------------------------------------------+
+|                                                    1 |
++------------------------------------------------------+
 1 row in set (0.000 sec)
 ```
 
