@@ -3,7 +3,7 @@ title: create table and modify data
 author: douqq
 date:  2020-08-15 12:00:00 +0800
 categories: [Database, SQL]
-tags: []
+tags: [sql]
 ---
 
 

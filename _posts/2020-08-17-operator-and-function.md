@@ -3,7 +3,7 @@ title: operation and function
 author: douqq
 date:  2020-08-17 12:00:00 +0800
 categories: [Database, SQL]
-tags: []
+tags: [sql,function]
 ---
 
 

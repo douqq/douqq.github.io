@@ -3,7 +3,7 @@ title: select and join
 author: douqq
 date:  2020-08-16 12:00:00 +0800
 categories: [Database, SQL]
-tags: []
+tags: [sql]
 ---
 
 
