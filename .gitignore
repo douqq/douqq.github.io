@@ -7,3 +7,5 @@ vendor
 .DS_Store
 */*/.DS_Store
 .container/
+_scripts/.DS_Store
+assets/.DS_Store
